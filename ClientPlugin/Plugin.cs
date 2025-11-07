@@ -1,9 +1,17 @@
-﻿using System;
-using System.Reflection;
-using ClientPlugin.Settings;
+﻿using ClientPlugin.Settings;
 using ClientPlugin.Settings.Layouts;
 using HarmonyLib;
+using ParallelTasks;
+using Sandbox;
+using Sandbox.Engine.Utils;
+using Sandbox.Game.Localization;
 using Sandbox.Graphics.GUI;
+using System;
+using System.Reflection;
+using VRage;
+using VRage.Input;
+using VRage.Platform.Windows;
+using VRage.Platform.Windows.Forms;
 using VRage.Plugins;
 
 namespace ClientPlugin
@@ -15,6 +23,32 @@ namespace ClientPlugin
         public static Plugin Instance { get; private set; }
         private SettingsGenerator settingsGenerator;
 
+        public Plugin()
+        {
+            Harmony harmony = new Harmony(Name);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+            (MyVRage.Platform as MyVRagePlatform).Input = Singleton<WindowsInput>.Instance;
+            Singleton<WindowsInput>.Instance.Init(MyVRage.Platform.Windows as MyWindowsWindows);
+
+            MySandboxGame.Static.UpdateMouseCapture();
+
+            // Reinitialize MyInput
+
+            var gamecontrols = (MyInput.Static as MyVRageInput).m_defaultGameControlsList;
+
+            MyInput.UnloadData();
+            MyInput.Initialize(new MyVRageInput(MyVRage.Platform.Input, new MyKeysToString(), gamecontrols, MyFakes.ENABLE_F12_MENU, delegate
+            {
+                MyFakes.ENABLE_F12_MENU = true;
+            }));
+            MyInput.Static.SetMousePositionScale(MySandboxGame.Config.SpriteMainViewportScale);
+
+            MyInput.Static.LoadContent();
+            MyInput.Static.LoadData(MySandboxGame.Config.ControlsGeneral, MySandboxGame.Config.ControlsButtons);
+            MySandboxGame.Static.InitJoystick();
+        }
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         public void Init(object gameInstance)
         {
@@ -22,8 +56,6 @@ namespace ClientPlugin
             Instance.settingsGenerator = new SettingsGenerator();
 
             // TODO: Put your one time initialization code here.
-            Harmony harmony = new Harmony(Name);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
         public void Dispose()

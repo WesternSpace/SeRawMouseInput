@@ -62,6 +62,12 @@
     <Reference Include="Sandbox.Game.XmlSerializers" HintPath="$(Bin64)\Sandbox.Game.XmlSerializers.dll" Private="False" />
     <Reference Include="Sandbox.Graphics" HintPath="$(Bin64)\Sandbox.Graphics.dll" Private="False" />
     <Reference Include="Sandbox.RenderDirect" HintPath="$(Bin64)\Sandbox.RenderDirect.dll" Private="False" />
+    <Reference Include="SharpDX">
+      <HintPath>$(Bin64)\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DirectInput">
+      <HintPath>$(Bin64)\SharpDX.DirectInput.dll</HintPath>
+    </Reference>
     <Reference Include="SixLabors.Core" HintPath="$(Bin64)\SixLabors.Core.dll" Private="False" />
     <Reference Include="SixLabors.ImageSharp" HintPath="$(Bin64)\SixLabors.ImageSharp.dll" Private="False" />
     <Reference Include="SpaceEngineers.Game" HintPath="$(Bin64)\SpaceEngineers.Game.dll" Private="False" />
@@ -199,8 +205,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Lib.Harmony" Version="2.3.3" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
   </ItemGroup>
   <ItemGroup>
+    <Publicize Include="Sandbox.Game" />
 	<Publicize Include="VRage.Platform.Windows" />
+	<Publicize Include="VRage.Input" />
   </ItemGroup>
 </Project>
