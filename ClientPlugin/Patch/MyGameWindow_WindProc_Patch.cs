@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using ClientPlugin.RawInput;
+using HarmonyLib;
 using System.Windows.Forms;
 using VRage.Platform.Windows.Forms;
 
@@ -9,10 +10,10 @@ namespace ClientPlugin.Patch
     {
         private static bool Prefix(ref Message m)
         {
-            if (m.Msg != RawInput.WM_INPUT)
+            if (m.Msg != RawInputApi.WM_INPUT)
                 return true;
 
-            RawInput.WinProc(ref m);
+            RawInputApi.WinProc(ref m);
             return false;
         }
     }

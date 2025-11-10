@@ -1,4 +1,7 @@
-﻿using ParallelTasks;
+﻿using ClientPlugin.RawInput;
+using ClientPlugin.RawInput.Enums;
+using ClientPlugin.RawInput.Structs;
+using EmptyKeys.UserInterface.Input;
 using SharpDX.DirectInput;
 using System;
 using System.Collections.Generic;
@@ -9,11 +12,10 @@ using VRage.Input;
 using VRage.Platform.Windows.Forms;
 using VRage.Platform.Windows.Input;
 using VRageMath;
-using static ClientPlugin.WindowsInput;
 
 namespace ClientPlugin
 {
-    internal class WindowsInput : IVRageInput, IVRageInput2
+    public class WindowsInput : IVRageInput, IVRageInput2
     {
         public enum KeyboardType
         {
@@ -26,7 +28,7 @@ namespace ClientPlugin
         {
             Raw,
             DirectInput,
-            Windows
+            //Windows
         }
 
         private MyWindowsWindows windowManager;
@@ -93,9 +95,10 @@ namespace ClientPlugin
         public void Init(MyWindowsWindows windows)
         {
             windowManager = windows;
+            directInput = new MyDirectInput(windows);
             OnKeyboardTypeChanged(activeKeyboardType);
             OnMouseTypeChanged(activeMouseType);
-            directInput = new MyDirectInput(windows);
+            
             IsCorrectlyInitialized = directInput.IsCorrectlyInitialized;
         }
 
@@ -103,11 +106,11 @@ namespace ClientPlugin
         {
             if (keyboardType == KeyboardType.Raw)
             {
-                RawInput.RAWINPUTDEVICE[] device = new RawInput.RAWINPUTDEVICE[1];
-                device[0].usUsagePage = RawInput.HID_USAGE_PAGE_GENERIC;
-                device[0].usUsage = RawInput.HID_USAGE_GENERIC_KEYBOARD;
+                RawInputDevice[] device = new RawInputDevice[1];
+                device[0].usUsagePage = HidUsagePage.HID_USAGE_PAGE_GENERIC;
+                device[0].usUsage = HidUsageId.HID_USAGE_GENERIC_KEYBOARD;
 
-                if (RawInput.RegisterRawInputDevices(device, 1, (uint)Marshal.SizeOf(typeof(RawInput.RAWINPUTDEVICE))))
+                if (RawInputNative.RegisterRawInputDevices(device, 1, (uint)Marshal.SizeOf(typeof(RawInputDevice))))
                 {
                     return;
                 }
@@ -120,16 +123,28 @@ namespace ClientPlugin
         {
             if (mouseType == MouseType.Raw)
             {
-                RawInput.RAWINPUTDEVICE[] device = new RawInput.RAWINPUTDEVICE[1];
-                device[0].usUsagePage = RawInput.HID_USAGE_PAGE_GENERIC;
-                device[0].usUsage = RawInput.HID_USAGE_GENERIC_MOUSE;
+                if (directInput.m_mouse != null)
+                {
+                    directInput.m_mouse.Dispose();
+                    directInput.m_mouse = null;
+                }
 
-                if (RawInput.RegisterRawInputDevices(device, 1, (uint)Marshal.SizeOf(typeof(RawInput.RAWINPUTDEVICE))))
+                RawInputDevice[] device = new RawInputDevice[1];
+                device[0].usUsagePage = HidUsagePage.HID_USAGE_PAGE_GENERIC;
+                device[0].usUsage = HidUsageId.HID_USAGE_GENERIC_MOUSE;
+
+                if (RawInputNative.RegisterRawInputDevices(device, 1, (uint)Marshal.SizeOf(typeof(RawInputDevice))))
                 {
                     return;
                 }
 
                 mouseType = MouseType.DirectInput;
+            }
+
+            if (mouseType == MouseType.DirectInput && directInput.m_mouse == null)
+            {
+                directInput.m_mouse = new(directInput.m_directInput);
+                directInput.m_mouse.SetCooperativeLevel(windowManager.WindowHandle, CooperativeLevel.NonExclusive | CooperativeLevel.Foreground);
             }
         }
 
@@ -167,15 +182,15 @@ namespace ClientPlugin
         {
             if (activeMouseType == MouseType.Raw)
             {
-                RawInput.LockMutexMouse.WaitOne();
+                RawInputApi.LockMutexMouse.WaitOne();
 
-                state = RawInput.MouseState;
+                state = RawInputApi.MouseState;
 
-                RawInput.MouseState.X = 0;
-                RawInput.MouseState.Y = 0;
-                RawInput.MouseState.ScrollWheelValue = 0;
+                RawInputApi.MouseState.X = 0;
+                RawInputApi.MouseState.Y = 0;
+                RawInputApi.MouseState.ScrollWheelValue = 0;
 
-                RawInput.LockMutexMouse.ReleaseMutex();
+                RawInputApi.LockMutexMouse.ReleaseMutex();
 
                 return;
             }
