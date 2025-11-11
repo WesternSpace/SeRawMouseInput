@@ -18,7 +18,7 @@ namespace ClientPlugin
     {
         #region Options
 
-        private WindowsInput.MouseType mouseType = WindowsInput.MouseType.Raw;
+        private WindowsInput.MouseMode mouseMode = WindowsInput.MouseMode.Raw;
 
         #endregion
 
@@ -28,14 +28,14 @@ namespace ClientPlugin
 
         [Separator]
 
-        [Dropdown(label: "Mouse Input Type")]
-        public WindowsInput.MouseType MouseType
+        [Dropdown(label: "Mouse Mode")]
+        public WindowsInput.MouseMode MouseMode
         {
-            get => mouseType;
+            get => mouseMode;
             set
             {
-                SetField(ref mouseType, value);
-                Singleton<WindowsInput>.Instance.ActiveMouseType = value;
+                SetField(ref mouseMode, value);
+                Singleton<WindowsInput>.Instance.ActiveMouseMode = value;
             }
         }
 

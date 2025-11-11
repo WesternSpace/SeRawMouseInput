@@ -17,14 +17,14 @@ namespace ClientPlugin
 {
     public class WindowsInput : IVRageInput, IVRageInput2
     {
-        public enum KeyboardType
+        public enum KeyboardMode
         {
             Raw,
             DirectInput,
             Windows
         }
 
-        public enum MouseType
+        public enum MouseMode
         {
             Raw,
             DirectInput,
@@ -33,32 +33,32 @@ namespace ClientPlugin
 
         private MyWindowsWindows windowManager;
 
-        private KeyboardType activeKeyboardType = KeyboardType.DirectInput;
-        private MouseType activeMouseType = MouseType.Raw;
+        private KeyboardMode activeKeyboardMode = KeyboardMode.DirectInput;
+        private MouseMode activeMouseMode = MouseMode.Raw;
 
-        public KeyboardType ActiveKeyboardType
+        public KeyboardMode ActiveKeyboardMode
         {
             get
             {
-                return activeKeyboardType;
+                return activeKeyboardMode;
             }
             set
             {
-                activeKeyboardType = value;
-                OnKeyboardTypeChanged(value);
+                activeKeyboardMode = value;
+                OnKeyboardModeChanged(value);
             }
         }
 
-        public MouseType ActiveMouseType
+        public MouseMode ActiveMouseMode
         {
             get
             {
-                return activeMouseType;
+                return activeMouseMode;
             }
             set
             {
-                activeMouseType = value;
-                OnMouseTypeChanged(value);
+                activeMouseMode = value;
+                OnMouseModeChanged(value);
             }
         }
 
@@ -96,15 +96,15 @@ namespace ClientPlugin
         {
             windowManager = windows;
             directInput = new MyDirectInput(windows);
-            OnKeyboardTypeChanged(activeKeyboardType);
-            OnMouseTypeChanged(activeMouseType);
+            OnKeyboardModeChanged(activeKeyboardMode);
+            OnMouseModeChanged(activeMouseMode);
             
             IsCorrectlyInitialized = directInput.IsCorrectlyInitialized;
         }
 
-        private void OnKeyboardTypeChanged(KeyboardType keyboardType)
+        private void OnKeyboardModeChanged(KeyboardMode keyboardMode)
         {
-            if (keyboardType == KeyboardType.Raw)
+            if (keyboardMode == KeyboardMode.Raw)
             {
                 RawInputDevice[] device = new RawInputDevice[1];
                 device[0].usUsagePage = HidUsagePage.HID_USAGE_PAGE_GENERIC;
@@ -115,13 +115,13 @@ namespace ClientPlugin
                     return;
                 }
 
-                keyboardType = KeyboardType.DirectInput;
+                keyboardMode = KeyboardMode.DirectInput;
             }
         }
 
-        private void OnMouseTypeChanged(MouseType mouseType)
+        private void OnMouseModeChanged(MouseMode mouseMode)
         {
-            if (mouseType == MouseType.Raw)
+            if (mouseMode == MouseMode.Raw)
             {
                 if (directInput.m_mouse != null)
                 {
@@ -138,10 +138,10 @@ namespace ClientPlugin
                     return;
                 }
 
-                mouseType = MouseType.DirectInput;
+                mouseMode = MouseMode.DirectInput;
             }
 
-            if (mouseType == MouseType.DirectInput && directInput.m_mouse == null)
+            if (mouseMode == MouseMode.DirectInput && directInput.m_mouse == null)
             {
                 directInput.m_mouse = new(directInput.m_directInput);
                 directInput.m_mouse.SetCooperativeLevel(windowManager.WindowHandle, CooperativeLevel.NonExclusive | CooperativeLevel.Foreground);
@@ -180,7 +180,7 @@ namespace ClientPlugin
 
         public void GetMouseState(out MyMouseState state)
         {
-            if (activeMouseType == MouseType.Raw)
+            if (activeMouseMode == MouseMode.Raw)
             {
                 RawInputApi.LockMutexMouse.WaitOne();
 

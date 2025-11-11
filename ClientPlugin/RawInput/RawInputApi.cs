@@ -22,7 +22,7 @@ namespace ClientPlugin.RawInput
 
         public static void WinProc(ref Message msg)
         {
-            if (Singleton<WindowsInput>.Instance.ActiveMouseType != WindowsInput.MouseType.Raw)
+            if (Singleton<WindowsInput>.Instance.ActiveMouseMode != WindowsInput.MouseMode.Raw)
             {
                 return;
             }
